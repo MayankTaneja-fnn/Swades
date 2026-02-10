@@ -191,13 +191,144 @@ Stream response with tool execution
 
 ---
 
+## 🏥 Health Monitoring
+
+### Backend Health Endpoint
+
+The backend provides a health check endpoint for monitoring:
+
+**Endpoint:** `GET /health`
+
+**Response:**
+```json
+{
+  "status": "ok"
+}
+```
+
+**Usage:**
+```bash
+curl http://localhost:3000/health
+```
+
+This endpoint can be used by:
+- Load balancers for health checks
+- Monitoring tools (e.g., Prometheus, Datadog)
+- Docker health checks
+- Kubernetes liveness/readiness probes
+
+### Docker Health Checks
+
+The PostgreSQL container includes automatic health checks:
+
+```yaml
+healthcheck:
+  test: ["CMD-SHELL", "pg_isready -U postgres"]
+  interval: 10s
+  timeout: 5s
+  retries: 5
+```
+
+**Check container health:**
+```bash
+docker-compose ps
+# Look for "healthy" status
+```
+
+**View health check logs:**
+```bash
+docker inspect ai-support-postgres --format='{{json .State.Health}}' | jq
+```
+
+### Monitoring Best Practices
+
+For production deployments, consider:
+- Setting up uptime monitoring (e.g., UptimeRobot, Pingdom)
+- Implementing application performance monitoring (APM)
+- Configuring database connection pool monitoring
+- Setting up alerts for failed health checks
+- Monitoring API response times and error rates
+
+---
+
 ## 📦 Installation
 
 ### Prerequisites
 
 - Node.js 20+ 
-- PostgreSQL database
+- PostgreSQL database (or Docker)
 - OpenAI API key or Groq API key
+
+### Option A: Using Docker (Recommended)
+
+The easiest way to get started is using Docker for PostgreSQL.
+
+**Step 1: Create `docker-compose.yml` in project root**
+
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai-support-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ai_support
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+```
+
+**Step 2: Start PostgreSQL**
+
+```bash
+docker-compose up -d
+```
+
+**Step 3: Verify it's running**
+
+```bash
+docker-compose ps
+```
+
+Your `DATABASE_URL` in `.env` should be:
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ai_support"
+```
+
+**Useful Docker Commands:**
+
+```bash
+# Stop database
+docker-compose down
+
+# Stop and remove data
+docker-compose down -v
+
+# View logs
+docker-compose logs -f postgres
+
+# Access PostgreSQL CLI
+docker exec -it ai-support-postgres psql -U postgres -d ai_support
+```
+
+### Option B: Local PostgreSQL Installation
+
+If you prefer to install PostgreSQL locally, follow the [official installation guide](https://www.postgresql.org/download/).
+
+---
 
 ### Step 1: Clone Repository
 
