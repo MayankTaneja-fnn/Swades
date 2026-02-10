@@ -2,10 +2,10 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
-import chatRouter from './routes/chat';
-import agentsRouter from './routes/agents';
-import { rateLimit } from './middleware/rateLimit';
-import { errorMiddleware } from './middleware/errorMiddleware';
+import chatRouter from './routes/chat.js';
+import agentsRouter from './routes/agents.js';
+import { rateLimit } from './middleware/rateLimit.js';
+import { errorMiddleware } from './middleware/errorMiddleware.js';
 
 const app = new Hono()
 export { app }
@@ -13,8 +13,13 @@ export { app }
 
 // Global middleware
 app.use('/*', cors())
-app.use('/api/*', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 })) // 100 requests per 15 minutes
+
+// Increased rate limit for development/demo purposes
+const REQUEST_LIMIT = process.env.NODE_ENV === 'development' ? 500 : 200;
+app.use('/api/*', rateLimit({ windowMs: 15 * 60 * 1000, max: REQUEST_LIMIT })) // 500 requests per 15 minutes in dev
+
 app.use('*', errorMiddleware) // Global error handling
+
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
