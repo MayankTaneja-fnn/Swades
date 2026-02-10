@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String?
+  conversations Conversation[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  messages  Message[]
+  summary   String?   // JSON string storing conversation context
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String       // user, assistant
+  content        String
+  intent         String?      // Dynamic agent label (ORDER, BILLING, SUPPORT)
+  createdAt      DateTime     @default(now())
+}
+
+// Mock Tables for Agents
+
+model Order {
+  id           String   @id @default(uuid())
+  userId       String
+  status       String   // PENDING, SHIPPED, DELIVERED, CANCELLED
+  items        String   // JSON string of items
+  totalAmount  Float
+  deliveryDate DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Invoice {
+  id        String   @id @default(uuid())
+  userId    String
+  orderId   String
+  amount    Float
+  status    String   // PAID, PENDING, REFUNDED
+  dueDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

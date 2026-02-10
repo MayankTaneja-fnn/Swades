@@ -1,0 +1,152 @@
+import { Context } from 'hono';
+import { routeAndProcess } from '../services/agentService';
+import { saveMessage, getConversationHistory, createConversation, getUserConversations, deleteConversation, getConversation } from '../services/chatService';
+import { prisma } from '../lib/db';
+
+export const getConversationsController = async (c: Context) => {
+    // TODO: Get userId from auth context
+    const userId = 'user-123-mock'; // Mock user
+    const conversations = await getUserConversations(userId);
+    return c.json(conversations);
+};
+
+export const getConversationController = async (c: Context) => {
+    const id = c.req.param('id');
+    const conversation = await getConversation(id);
+    if (!conversation) {
+        return c.json({ error: 'Conversation not found' }, 404);
+    }
+    const messages = await getConversationHistory(id);
+    return c.json(messages);
+};
+
+export const createConversationController = async (c: Context) => {
+    const userId = 'user-123-mock';
+    const conversation = await createConversation(userId);
+    return c.json(conversation);
+};
+
+export const sendMessageController = async (c: Context) => {
+    try {
+        const body = await c.req.json();
+
+        // AI SDK sends: { messages: [...], conversationId: "..." }
+        const { conversationId, messages } = body;
+
+        if (!conversationId) {
+            console.error('Missing conversationId in request');
+            return c.json({ error: 'Conversation ID required' }, 400);
+        }
+
+        if (!messages || !Array.isArray(messages) || messages.length === 0) {
+            console.error('Invalid messages array:', messages);
+            return c.json({ error: 'Messages array required' }, 400);
+        }
+
+        // Get the last user message from the messages array
+        const lastMessage = messages[messages.length - 1];
+        console.log('Last message:', lastMessage);
+
+        // Extract text content from the message
+        let messageContent = '';
+        if (typeof lastMessage.content === 'string') {
+            messageContent = lastMessage.content;
+        } else if (Array.isArray(lastMessage.content)) {
+            // Handle array of parts (common in AI SDK)
+            messageContent = lastMessage.content
+                .filter((part: any) => part.type === 'text')
+                .map((part: any) => part.text)
+                .join('\n');
+        } else if (lastMessage.parts) {
+            for (const part of lastMessage.parts) {
+                if (part.type === 'text') {
+                    messageContent += part.text;
+                }
+            }
+        } else if (lastMessage.text) {
+            messageContent = lastMessage.text;
+        }
+
+        console.log('Extracted message content:', messageContent);
+
+        if (!messageContent || messageContent.trim().length === 0) {
+            console.error('Empty message content');
+            return c.json({ error: 'Message content required' }, 400);
+        }
+
+        // 1. Check if conversation exists
+        const conversation = await getConversation(conversationId);
+        if (!conversation) {
+            console.error('Conversation not found:', conversationId);
+            return c.json({ error: 'Conversation not found. Please create a new chat.' }, 404);
+        }
+
+        // 2. Save User Message
+        console.log('Saving user message...');
+        await saveMessage(conversationId, 'user', messageContent);
+
+        // 3. Fetch History
+        console.log('Fetching conversation history...');
+        const history = await getConversationHistory(conversationId);
+
+        // Defensive check: ensure history is an array
+        if (!history || !Array.isArray(history)) {
+            console.error('Invalid history returned:', history);
+            return c.json({ error: 'Failed to retrieve conversation history' }, 500);
+        }
+
+        console.log(`Retrieved ${history.length} messages from history`);
+
+        // Normalize history for the agent service
+        const coreMessages = history.map((m: any) => ({
+            role: m.role,
+            content: m.content || ""
+        }));
+
+        // 4. Process with Agent Router
+        console.log(`Processing message for conversation: ${conversationId}`);
+        const routeResult = await routeAndProcess(coreMessages, conversationId, async (text: string, intent: string) => {
+            console.log(`Persisting assistant response for ${conversationId}`);
+            await saveMessage(conversationId, 'assistant', text, intent);
+        });
+
+        // Defensive check: ensure routeResult exists
+        if (!routeResult || !routeResult.result) {
+            console.error('Invalid route result:', routeResult);
+            return c.json({ error: 'Failed to process message' }, 500);
+        }
+
+        const { result, intent } = routeResult;
+
+        // 5. Stream Response
+        console.log(`Returning text stream response for intent: ${intent}`);
+
+        // Return proper AI SDK streaming response
+        // Return proper AI SDK streaming response
+        const response = result.toUIMessageStreamResponse({
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'X-Intent': intent
+            },
+            messageMetadata: () => ({ intent })
+        });
+
+        return response;
+    } catch (error) {
+        console.error("CRITICAL STREAM ERROR:", error);
+        console.error("Error stack:", (error as any).stack);
+        return c.json({ error: 'Internal Server Error', details: (error as any).message }, 500);
+    }
+};
+
+export const deleteConversationController = async (c: Context) => {
+    const id = c.req.param('id');
+    try {
+        await deleteConversation(id);
+        return c.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        return c.json({ error: 'Failed to delete conversation' }, 500);
+    }
+};

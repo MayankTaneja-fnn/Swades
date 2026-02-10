@@ -1,0 +1,8 @@
+--- ORDERS ---
+ID: aa65f45a-2ba6-41d5-9c67-9c01eb77f36b | Status: SHIPPED | Amount: $180
+ID: 5657052c-5caf-48c0-9728-a5014d8c7b72 | Status: PENDING | Amount: $60
+ID: bfa4a4c5-8d35-47da-84d6-acc8c63b3a09 | Status: DELIVERED | Amount: $120
+
+--- INVOICES ---
+ID: ffda4827-8ed5-45af-9576-c8fecc79fef8 | OrderID: aa65f45a-2ba6-41d5-9c67-9c01eb77f36b | Status: PAID | Amount: $180
+ID: a0ee921a-683a-49f4-a730-de2f9a90def6 | OrderID: 5657052c-5caf-48c0-9728-a5014d8c7b72 | Status: PENDING | Amount: $60
