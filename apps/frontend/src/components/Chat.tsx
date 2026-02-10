@@ -62,6 +62,7 @@ export default function Chat() {
         } catch (error) {
             console.error("Failed to load conversation:", error);
         } finally {
+            console.log("Setting isInitialized to true (loadConversation)");
             setIsInitialized(true);
         }
     };
@@ -83,6 +84,7 @@ export default function Chat() {
         } catch (error) {
             console.error("Failed to create conversation:", error);
         } finally {
+            console.log("Setting isInitialized to true (handleCreateNewChat)");
             setIsInitialized(true);
         }
     };
