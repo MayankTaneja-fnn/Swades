@@ -9,7 +9,7 @@ const app = new Hono()
 
 // Global middleware
 app.use('/*', cors({
-    origin: process.env.ORIGIN_URL || 'http://localhost:5173',
+    origin: process.env.ORIGIN_URL || 'https://swades-frontend.vercel.app',
     credentials: true,
 }))
 
