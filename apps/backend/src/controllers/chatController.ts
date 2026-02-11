@@ -1,7 +1,7 @@
 import { Context } from 'hono';
-import { routeAndProcess } from '../services/agentService';
-import { saveMessage, getConversationHistory, createConversation, getUserConversations, deleteConversation, getConversation } from '../services/chatService';
-import { prisma } from '../lib/db';
+import { routeAndProcess } from '../services/agentService.js';
+import { saveMessage, getConversationHistory, createConversation, getUserConversations, deleteConversation, getConversation } from '../services/chatService.js';
+import { prisma } from '../lib/db.js';
 
 export const getConversationsController = async (c: Context) => {
     // TODO: Get userId from auth context

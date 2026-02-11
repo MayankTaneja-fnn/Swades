@@ -459,6 +459,39 @@ npm test
 
 ---
 
+## 🌱 Seed Data for Testing
+
+To populate your database with dummy data for testing, run:
+
+```bash
+cd apps/backend
+npm run db:seed
+```
+
+This will create a test user (`Alice User`) and several order/invoice scenarios. Use the **exact UUIDs** below to test specific agent paths.
+
+### 👤 Test User
+- **Name:** Alice User
+- **User ID:** `user-123-mock` (Auto-detected by mock auth)
+
+### 📦 Order Scenarios
+
+| Status | Order UUID | Description | Example Prompts |
+| :--- | :--- | :--- | :--- |
+| **PENDING** | `550e8400-e29b-41d4-a716-446655440001` | Created 7 days ago. Unfulfilled. | "Cancel order 550e...0001", "Change address for order 550e...0001" |
+| **SHIPPED** | `550e8400-e29b-41d4-a716-446655440002` | On the way. Trackable. | "Track order 550e...0002", "Where is my order?" |
+| **DELIVERED** | `550e8400-e29b-41d4-a716-446655440003` | Delivered 5 days ago. | "Return order 550e...0003", "I want a refund" |
+
+### 💳 Invoice Scenarios
+
+| Status | Invoice UUID | For Order | Example Prompts |
+| :--- | :--- | :--- | :--- |
+| **PAID** | `550e8400-e29b-41d4-a716-446655440004` | Pending Order | "Get invoice 550e...0004", "Show my paid invoices" |
+| **PAID** | `550e8400-e29b-41d4-a716-446655440005` | Shipped Order | | 
+| **PAID** | `550e8400-e29b-41d4-a716-446655440006` | Delivered Order | |
+
+---
+
 ## 📁 Project Structure
 
 ```

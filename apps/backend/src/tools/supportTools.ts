@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { conversationRepo } from "../repositories/conversationRepository";
-import { KnowledgeBaseResult, ConversationHistoryResult, OrderIdResult, InvoiceResult } from "../types/agentTypes";
+import { conversationRepo } from "../repositories/conversationRepository.js";
+import { KnowledgeBaseResult, ConversationHistoryResult, OrderIdResult, InvoiceResult } from "../types/agentTypes.js";
 
 export const supportTools = {
     searchKnowledgeBase: tool({

@@ -1,29 +1,38 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { prisma } from "../lib/db";
-import { InvoiceToolResult, RefundToolResult, RefundStatusResult, SubscriptionResult } from "../types/agentTypes";
+import { prisma } from "../lib/db.js";
+import { InvoiceToolResult, RefundToolResult, RefundStatusResult, SubscriptionResult } from "../types/agentTypes.js";
 
 export const billingTools = {
     getInvoice: tool({
-        description: "Get invoice details using the associated Order UUID",
+        description: "Get invoice details using the associated Order UUID or the Invoice UUID directly",
         inputSchema: z.object({
-            orderId: z.string().describe("The associated Order UUID string"),
+            orderId: z.string().optional().describe("The associated Order UUID string"),
+            invoiceId: z.string().optional().describe("The Invoice UUID string"),
         }),
-        execute: async ({ orderId }: { orderId: string }): Promise<InvoiceToolResult> => {
+        execute: async ({ orderId, invoiceId }: { orderId?: string; invoiceId?: string }): Promise<InvoiceToolResult> => {
             try {
-                if (!orderId || orderId === "undefined") {
+                console.log(`Tool EXECUTE: getInvoice`, { orderId, invoiceId });
+
+                if (!orderId && !invoiceId) {
                     return {
                         found: false,
-                        orderId,
-                        error: "No Order ID provided. Please ask the user for the Order ID."
+                        orderId: "unknown",
+                        error: "Please provide either an Order ID or an Invoice ID."
                     };
                 }
 
-                console.log(`Tool EXECUTE: getInvoice for ${orderId}`);
+                let invoice;
 
-                const invoice = await prisma.invoice.findFirst({
-                    where: { orderId },
-                });
+                if (invoiceId) {
+                    invoice = await prisma.invoice.findUnique({
+                        where: { id: invoiceId },
+                    });
+                } else if (orderId) {
+                    invoice = await prisma.invoice.findFirst({
+                        where: { orderId },
+                    });
+                }
 
                 if (invoice) {
                     return {
@@ -32,20 +41,20 @@ export const billingTools = {
                         amount: invoice.amount,
                         status: invoice.status,
                         dueDate: invoice.dueDate.toISOString(),
-                        orderId
+                        orderId: invoice.orderId
                     };
                 } else {
                     return {
                         found: false,
-                        orderId,
-                        error: "Invoice not found for this order."
+                        orderId: orderId || "unknown",
+                        error: "Invoice not found."
                     };
                 }
             } catch (error) {
                 console.error("Tool ERROR (getInvoice):", error);
                 return {
                     found: false,
-                    orderId,
+                    orderId: orderId || "unknown",
                     error: "Error accessing billing database."
                 };
             }

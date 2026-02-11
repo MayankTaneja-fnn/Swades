@@ -1,6 +1,6 @@
-import { chatRepo } from '../repositories/chatRepository';
-import { conversationRepo } from '../repositories/conversationRepository';
-import { userRepo } from '../repositories/userRepository';
+import { chatRepo } from '../repositories/chatRepository.js';
+import { conversationRepo } from '../repositories/conversationRepository.js';
+import { userRepo } from '../repositories/userRepository.js';
 
 /**
  * Service layer for chat business logic

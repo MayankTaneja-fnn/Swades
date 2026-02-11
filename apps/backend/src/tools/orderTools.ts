@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { prisma } from "../lib/db";
-import { OrderToolResult, CancelOrderResult, UpdateAddressResult } from "../types/agentTypes";
+import { prisma } from "../lib/db.js";
+import { OrderToolResult, CancelOrderResult, UpdateAddressResult } from "../types/agentTypes.js";
 
 export const orderTools = {
     trackOrder: tool({

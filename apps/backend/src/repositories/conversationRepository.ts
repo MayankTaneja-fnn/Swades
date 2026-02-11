@@ -1,4 +1,4 @@
-import { prisma } from '../lib/db';
+import { prisma } from '../lib/db.js';
 
 // Repository layer for database operations
 export class ConversationRepository {
@@ -6,7 +6,7 @@ export class ConversationRepository {
         const messages = await prisma.message.findMany({
             where: { conversationId },
             orderBy: { createdAt: 'asc' },
-            select: {
+            select: {   
                 id: true,
                 role: true,
                 content: true,

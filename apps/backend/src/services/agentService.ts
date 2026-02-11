@@ -1,13 +1,13 @@
 import { generateText, streamText, convertToModelMessages, stepCountIs } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { z } from "zod";
-import { conversationRepo } from "../repositories/conversationRepository";
-import { chatRepo } from "../repositories/chatRepository";
-import { extractUUID } from "../utils/uuidExtractor";
-import { ChatMessage, ConversationContext, RoutingResult } from "../types/agentTypes";
-import { orderTools } from "../tools/orderTools";
-import { billingTools } from "../tools/billingTools";
-import { supportTools } from "../tools/supportTools";
+import { conversationRepo } from "../repositories/conversationRepository.js";
+import { chatRepo } from "../repositories/chatRepository.js";
+import { extractUUID } from "../utils/uuidExtractor.js";
+import { ChatMessage, ConversationContext, RoutingResult } from "../types/agentTypes.js";
+import { orderTools } from "../tools/orderTools.js";
+import { billingTools } from "../tools/billingTools.js";
+import { supportTools } from "../tools/supportTools.js";
 
 // Helper to extract plain text from message content
 function getMessageText(message: ChatMessage): string {
