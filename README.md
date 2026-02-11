@@ -201,54 +201,6 @@ Stream response with tool execution
 
 ---
 
-## 🏥 Health Monitoring
-
-### Backend Health Endpoint
-
-The backend provides a health check endpoint for monitoring:
-
-**Endpoint:** `GET /health`
-
-**Response:**
-```json
-{
-  "status": "ok"
-}
-```
-
-**Usage:**
-```bash
-curl http://localhost:3000/health
-```
-
-This endpoint can be used by:
-- Load balancers for health checks
-- Monitoring tools (e.g., Prometheus, Datadog)
-- Docker health checks
-- Kubernetes liveness/readiness probes
-
-### Docker Health Checks
-
-The PostgreSQL container includes automatic health checks:
-
-```yaml
-healthcheck:
-  test: ["CMD-SHELL", "pg_isready -U postgres"]
-  interval: 10s
-  timeout: 5s
-  retries: 5
-```
-
-**Check container health:**
-```bash
-docker-compose ps
-# Look for "healthy" status
-```
-
-**View health check logs:**
-```bash
-docker inspect ai-support-postgres --format='{{json .State.Health}}' | jq
-```
 
 ### Monitoring Best Practices
 
@@ -266,77 +218,10 @@ For production deployments, consider:
 ### Prerequisites
 
 - Node.js 20+ 
-- PostgreSQL database (or Docker)
+- PostgreSQL database (Neon Recommended)
 - OpenAI API key or Groq API key
 
-### Option A: Using Docker (Recommended)
 
-The easiest way to get started is using Docker for PostgreSQL.
-
-**Step 1: Create `docker-compose.yml` in project root**
-
-```yaml
-version: '3.8'
-
-services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: ai-support-postgres
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ai_support
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  postgres_data:
-```
-
-**Step 2: Start PostgreSQL**
-
-```bash
-docker-compose up -d
-```
-
-**Step 3: Verify it's running**
-
-```bash
-docker-compose ps
-```
-
-Your `DATABASE_URL` in `.env` should be:
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ai_support"
-```
-
-**Useful Docker Commands:**
-
-```bash
-# Stop database
-docker-compose down
-
-# Stop and remove data
-docker-compose down -v
-
-# View logs
-docker-compose logs -f postgres
-
-# Access PostgreSQL CLI
-docker exec -it ai-support-postgres psql -U postgres -d ai_support
-```
-
-### Option B: Local PostgreSQL Installation
-
-If you prefer to install PostgreSQL locally, follow the [official installation guide](https://www.postgresql.org/download/).
 
 ---
 
@@ -360,16 +245,16 @@ This will install dependencies for all workspaces (backend, frontend, shared-typ
 Create `.env` file in `apps/backend/`:
 
 ```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/ai_support"
+# Database (Neon)
+DATABASE_URL="postgresql://neondb_owner:password@ep-host.aws.neon.tech/neondb?sslmode=require"
 
 # AI Provider (choose one)
 OPENAI_API_KEY="sk-..."
 # OR
 GROQ_API_KEY="gsk_..."
 
-# Server
-PORT=3000
+# CORS (Optional, for production)
+CORS_ORIGIN="https://your-frontend.vercel.app"
 ```
 
 ### Step 4: Database Setup
@@ -615,3 +500,30 @@ No environment variables required. API URL is configured in `vite.config.ts` pro
 - `status`: Enum (PENDING, PAID, OVERDUE)
 - `dueDate`: DateTime
 
+
+---
+
+## 🚀 Deployment (Vercel)
+
+The project is optimized for deployment on Vercel.
+
+### 1. Database (Neon)
+Ensure your Neon database is set up and accessible.
+
+### 2. Backend Deployment
+1. Push your code to GitHub.
+2. Import the `ai-support-system` repository in Vercel.
+3. **Root Directory**: Select `apps/backend`.
+4. **Environment Variables**: Add `DATABASE_URL`, `OPENAI_API_KEY` (or `GROQ_API_KEY`), and `CORS_ORIGIN` (your frontend URL).
+5. **Framework Preset**: Select `Other`.
+6. **Build Command**: `npm run build`
+7. **Install Command**: `npm install`.
+8. Deploy!
+
+### 3. Frontend Deployment
+1. Import the same repository again in Vercel (new project).
+2. **Root Directory**: Select `apps/frontend`.
+3. **Framework Preset**: Vite.
+4. **Environment Variables**: 
+   - `VITE_API_URL`: Set this to your **Backend Deployment URL** (e.g., `https://your-backend.vercel.app`).
+5. Deploy!

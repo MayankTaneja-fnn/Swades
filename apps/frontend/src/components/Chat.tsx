@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export default function Chat() {
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [conversations, setConversations] = useState<any[]>([]);
@@ -11,7 +13,7 @@ export default function Chat() {
     const [isInitialized, setIsInitialized] = useState(false);
 
     const { messages, sendMessage, status, setMessages } = useChat({
-        api: "/api/chat/messages",
+        api: `${API_BASE}/api/chat/messages`,
         onError: (error: any) => {
             console.error("Chat Error:", error);
         },
@@ -25,7 +27,7 @@ export default function Chat() {
 
     const fetchConversations = async () => {
         try {
-            const response = await fetch("/api/chat/conversations");
+            const response = await fetch(`${API_BASE}/api/chat/conversations`);
             if (response.ok) {
                 const data = await response.json();
                 setConversations(data);
@@ -38,7 +40,7 @@ export default function Chat() {
 
     const loadConversation = async (id: string) => {
         try {
-            const response = await fetch(`/api/chat/conversations/${id}`);
+            const response = await fetch(`${API_BASE}/api/chat/conversations/${id}`);
 
             if (response.ok) {
                 const data = await response.json();
@@ -66,7 +68,7 @@ export default function Chat() {
 
     const handleCreateNewChat = async () => {
         try {
-            const response = await fetch("/api/chat/conversations", {
+            const response = await fetch(`${API_BASE}/api/chat/conversations`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });
@@ -90,7 +92,7 @@ export default function Chat() {
         if (!confirm("Are you sure?")) return;
 
         try {
-            const response = await fetch(`/api/chat/conversations/${id}`, {
+            const response = await fetch(`${API_BASE}/api/chat/conversations/${id}`, {
                 method: "DELETE",
             });
 
@@ -141,7 +143,7 @@ export default function Chat() {
         if (!currentConversationId) {
             try {
 
-                const response = await fetch("/api/chat/conversations", {
+                const response = await fetch(`${API_BASE}/api/chat/conversations`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                 });

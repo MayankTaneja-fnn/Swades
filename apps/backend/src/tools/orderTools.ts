@@ -12,6 +12,7 @@ export const orderTools = {
         }),
         execute: async ({ orderId }: { orderId: string }): Promise<OrderToolResult> => {
             try {
+                console.log(`[TrackOrder] Received orderId: '${orderId}'`);
                 if (!orderId || orderId === "undefined") {
                     return {
                         found: false,
@@ -20,11 +21,10 @@ export const orderTools = {
                     };
                 }
 
-
-
                 const order = await prisma.order.findUnique({
                     where: { id: orderId },
                 });
+                console.log(`[TrackOrder] Query result for '${orderId}':`, order ? 'Found' : 'Not Found');
 
                 if (order) {
                     return {
