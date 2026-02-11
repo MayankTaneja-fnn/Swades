@@ -5,7 +5,7 @@ vi.mock('@hono/node-server', () => ({
     serve: vi.fn(),
 }));
 
-import { app } from '../index.js';
+import { app } from '../app.js';
 
 describe('Agent Routes', () => {
     it('GET /api/agents should return a list of agents', async () => {

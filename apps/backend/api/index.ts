@@ -5,4 +5,4 @@ export const config = {
     runtime: 'edge',
 };
 
-export default handle(app);
+// export default handle(app);

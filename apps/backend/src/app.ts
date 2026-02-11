@@ -8,7 +8,10 @@ import { errorMiddleware } from './middleware/errorMiddleware.js';
 const app = new Hono()
 
 // Global middleware
-app.use('/*', cors())
+app.use('/*', cors({
+    origin: process.env.ORIGIN_URL || 'http://localhost:5173',
+    credentials: true,
+}))
 
 const REQUEST_LIMIT = process.env.NODE_ENV === 'development' ? 500 : 200;
 app.use('/api/*', rateLimit({ windowMs: 15 * 60 * 1000, max: REQUEST_LIMIT }))

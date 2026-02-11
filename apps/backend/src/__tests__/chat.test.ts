@@ -5,7 +5,7 @@ vi.mock('@hono/node-server', () => ({
     serve: vi.fn(),
 }));
 
-import { app } from '../index.js';
+import { app } from '../app.js';
 
 describe('Chat Routes', () => {
     // Strategy: Use app.request for Hono-native testing
