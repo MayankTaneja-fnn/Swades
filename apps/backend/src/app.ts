@@ -8,10 +8,9 @@ import { errorMiddleware } from "./middleware/errorMiddleware.js";
 const app = new Hono();
 
 app.use(
-  "/*",
+  "*",
   cors({
-    origin: (origin) => origin || "*",
-    credentials: true,
+    origin: "*",
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
   })
@@ -32,13 +31,7 @@ app.use("/api/*", rateLimit({ windowMs: 15 * 60 * 1000, max: REQUEST_LIMIT }));
 
 app.use("*", errorMiddleware);
 
-app.get("/", (c) => {
-  return c.text("Hello Hono!");
-});
-
-app.get("/health", (c) => {
-  return c.json({ status: "ok" });
-});
+app.get("/health", (c) => c.json({ status: "ok" }));
 
 app.route("/api/chat", chatRouter);
 app.route("/api/agents", agentsRouter);
