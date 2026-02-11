@@ -4,12 +4,13 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": ["DATABASE_URL", "OPENAI_API_KEY", "GROQ_API_KEY", "VITE_API_URL"]
+      "env": ["DATABASE_URL", "OPENAI_API_KEY", "GROQ_API_KEY", "VITE_API_URL", "ORIGIN_URL"]
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "env": ["DATABASE_URL", "OPENAI_API_KEY", "GROQ_API_KEY", "VITE_API_URL"]
+      "env": ["DATABASE_URL", "OPENAI_API_KEY", "GROQ_API_KEY", "VITE_API_URL", "ORIGIN_URL"]
+
     },
     "lint": {}
   }
