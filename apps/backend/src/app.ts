@@ -10,7 +10,7 @@ const app = new Hono();
 app.use(
   "/*",
   cors({
-    origin: ["https://swades-frontend.vercel.app", "http://localhost:5173"],
+    origin: (origin) => origin || "*",
     credentials: true,
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
