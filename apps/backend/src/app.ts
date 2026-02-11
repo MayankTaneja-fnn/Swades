@@ -1,33 +1,47 @@
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import chatRouter from './routes/chat.js';
-import agentsRouter from './routes/agents.js';
-import { rateLimit } from './middleware/rateLimit.js';
-import { errorMiddleware } from './middleware/errorMiddleware.js';
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import chatRouter from "./routes/chat.js";
+import agentsRouter from "./routes/agents.js";
+import { rateLimit } from "./middleware/rateLimit.js";
+import { errorMiddleware } from "./middleware/errorMiddleware.js";
 
-const app = new Hono()
+const app = new Hono();
 
-// Global middleware
-app.use('/*', cors({
-    origin: process.env.ORIGIN_URL || 'https://swades-frontend.vercel.app',
+app.use(
+  "/*",
+  cors({
+    origin: ["https://swades-frontend.vercel.app", "http://localhost:5173"],
     credentials: true,
-}))
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-const REQUEST_LIMIT = process.env.NODE_ENV === 'development' ? 500 : 200;
-app.use('/api/*', rateLimit({ windowMs: 15 * 60 * 1000, max: REQUEST_LIMIT }))
+app.options("*", (c) => c.body(null, 204));
 
-app.use('*', errorMiddleware)
+const REQUEST_LIMIT = process.env.NODE_ENV === "development" ? 500 : 200;
 
-app.get('/', (c) => {
-    return c.text('Hello Hono!')
-})
+app.use("/api/*", async (c, next) => {
+  if (c.req.method === "OPTIONS") {
+    return c.body(null, 204);
+  }
+  await next();
+});
 
-app.get('/health', (c) => {
-    return c.json({ status: 'ok' })
-})
+app.use("/api/*", rateLimit({ windowMs: 15 * 60 * 1000, max: REQUEST_LIMIT }));
 
-app.route('/api/chat', chatRouter);
-app.route('/api/agents', agentsRouter);
+app.use("*", errorMiddleware);
 
-export { app }
-export type AppType = typeof app
+app.get("/", (c) => {
+  return c.text("Hello Hono!");
+});
+
+app.get("/health", (c) => {
+  return c.json({ status: "ok" });
+});
+
+app.route("/api/chat", chatRouter);
+app.route("/api/agents", agentsRouter);
+
+export { app };
+export type AppType = typeof app;
