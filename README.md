@@ -501,29 +501,4 @@ No environment variables required. API URL is configured in `vite.config.ts` pro
 - `dueDate`: DateTime
 
 
----
 
-## 🚀 Deployment (Vercel)
-
-The project is optimized for deployment on Vercel.
-
-### 1. Database (Neon)
-Ensure your Neon database is set up and accessible.
-
-### 2. Backend Deployment
-1. Push your code to GitHub.
-2. Import the `ai-support-system` repository in Vercel.
-3. **Root Directory**: Select `apps/backend`.
-4. **Environment Variables**: Add `DATABASE_URL`, `OPENAI_API_KEY` (or `GROQ_API_KEY`), and `CORS_ORIGIN` (your frontend URL).
-5. **Framework Preset**: Select `Other`.
-6. **Build Command**: `npm run build`
-7. **Install Command**: `npm install`.
-8. Deploy!
-
-### 3. Frontend Deployment
-1. Import the same repository again in Vercel (new project).
-2. **Root Directory**: Select `apps/frontend`.
-3. **Framework Preset**: Vite.
-4. **Environment Variables**: 
-   - `VITE_API_URL`: Set this to your **Backend Deployment URL** (e.g., `https://your-backend.vercel.app`).
-5. Deploy!
