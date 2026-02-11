@@ -85,8 +85,14 @@ The AI Support System is a monorepo-based full-stack application that provides i
 │  │   Chat      │          │   Agent      │                 │
 │  │  Service    │          │  Service     │                 │
 │  └─────────────┘          └──────────────┘                 │
-│         │                                                     │
-│         ▼                                                     │
+│         │                          │                         │
+│         ▼                          ▼                         │
+│  ┌─────────────┐          ┌──────────────┐                 │
+│  │ Repository  │          │ Agent Tools  │                 │
+│  │    Layer    │          │              │                 │
+│  └─────────────┘          └──────────────┘                 │
+│         │                          │                         │
+│         ▼                          ▼                         │
 │  ┌─────────────────────────────────────────┐               │
 │  │          Prisma ORM                      │               │
 │  └─────────────────────────────────────────┘               │
@@ -136,6 +142,8 @@ Server-Sent Events (SSE) Stream
     ↓
 Frontend useChat hook → Real-time UI updates
     ↓
+Agent Service → Chat/Conversation Repository
+    ↓
 Message saved to Database (Prisma)
 ```
 
@@ -144,19 +152,21 @@ Message saved to Database (Prisma)
 ```
 New Chat Button → POST /api/chat/conversations
     ↓
-Create Conversation in DB
+Chat Controller → Conversation Repository
+    ↓
+Create Conversation in DB (Prisma)
     ↓
 Return conversationId to Frontend
     ↓
 Store in localStorage + state
-    ↓
-All messages linked to this conversation
 ```
 
 ### 3. Agent Routing Flow
 
 ```
 User Message → Analyze content
+    ↓
+Agent Service → Conversation Repository (fetch context)
     ↓
 Determine agent type (ORDER/BILLING/SUPPORT)
     ↓
@@ -513,6 +523,10 @@ ai-support-system/
 │   │   │   ├── routes/
 │   │   │   │   ├── chat.ts
 │   │   │   │   └── agents.ts
+│   │   │   ├── repositories/
+│   │   │   │   ├── chatRepository.ts
+│   │   │   │   ├── conversationRepository.ts
+│   │   │   │   └── userRepository.ts
 │   │   │   ├── services/
 │   │   │   │   └── agentService.ts    # AI integration
 │   │   │   └── index.ts               # Entry point
@@ -565,42 +579,6 @@ No environment variables required. API URL is configured in `vite.config.ts` pro
 
 ---
 
-## 🚀 Deployment
-
-### Backend Deployment
-
-1. Build the backend:
-```bash
-cd apps/backend
-npm run build
-```
-
-2. Set environment variables on your hosting platform
-
-3. Run migrations:
-```bash
-npm run db:migrate
-```
-
-4. Start the server:
-```bash
-npm start
-```
-
-### Frontend Deployment
-
-1. Update API URL in `vite.config.ts` if needed
-
-2. Build the frontend:
-```bash
-cd apps/frontend
-npm run build
-```
-
-3. Deploy the `dist/` folder to your static hosting service
-
----
-
 ## 📊 Database Schema
 
 ### User
@@ -637,24 +615,3 @@ npm run build
 - `status`: Enum (PENDING, PAID, OVERDUE)
 - `dueDate`: DateTime
 
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📝 License
-
-ISC
-
----
-
-## 🆘 Support
-
-For issues and questions, please open an issue on GitHub.

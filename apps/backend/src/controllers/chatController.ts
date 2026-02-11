@@ -30,7 +30,7 @@ export const sendMessageController = async (c: Context) => {
     try {
         const body = await c.req.json();
 
-        // AI SDK sends: { messages: [...], conversationId: "..." }
+
         const { conversationId, messages } = body;
 
         if (!conversationId) {
@@ -43,16 +43,17 @@ export const sendMessageController = async (c: Context) => {
             return c.json({ error: 'Messages array required' }, 400);
         }
 
-        // Get the last user message from the messages array
-        const lastMessage = messages[messages.length - 1];
-        console.log('Last message:', lastMessage);
 
-        // Extract text content from the message
+        const lastMessage = messages[messages.length - 1];
+
+
+
+
         let messageContent = '';
         if (typeof lastMessage.content === 'string') {
             messageContent = lastMessage.content;
         } else if (Array.isArray(lastMessage.content)) {
-            // Handle array of parts (common in AI SDK)
+
             messageContent = lastMessage.content
                 .filter((part: any) => part.type === 'text')
                 .map((part: any) => part.text)
@@ -67,50 +68,47 @@ export const sendMessageController = async (c: Context) => {
             messageContent = lastMessage.text;
         }
 
-        console.log('Extracted message content:', messageContent);
+
 
         if (!messageContent || messageContent.trim().length === 0) {
             console.error('Empty message content');
             return c.json({ error: 'Message content required' }, 400);
         }
 
-        // 1. Check if conversation exists
+
         const conversation = await getConversation(conversationId);
         if (!conversation) {
             console.error('Conversation not found:', conversationId);
             return c.json({ error: 'Conversation not found. Please create a new chat.' }, 404);
         }
 
-        // 2. Save User Message
-        console.log('Saving user message...');
+
         await saveMessage(conversationId, 'user', messageContent);
 
-        // 3. Fetch History
-        console.log('Fetching conversation history...');
+
         const history = await getConversationHistory(conversationId);
 
-        // Defensive check: ensure history is an array
+
         if (!history || !Array.isArray(history)) {
             console.error('Invalid history returned:', history);
             return c.json({ error: 'Failed to retrieve conversation history' }, 500);
         }
 
-        console.log(`Retrieved ${history.length} messages from history`);
 
-        // Normalize history for the agent service
+
+
         const coreMessages = history.map((m: any) => ({
             role: m.role,
             content: m.content || ""
         }));
 
-        // 4. Process with Agent Router
-        console.log(`Processing message for conversation: ${conversationId}`);
+
         const routeResult = await routeAndProcess(coreMessages, conversationId, async (text: string, intent: string) => {
-            console.log(`Persisting assistant response for ${conversationId}`);
+
             await saveMessage(conversationId, 'assistant', text, intent);
         });
 
-        // Defensive check: ensure routeResult exists
+
         if (!routeResult || !routeResult.result) {
             console.error('Invalid route result:', routeResult);
             return c.json({ error: 'Failed to process message' }, 500);
@@ -118,11 +116,10 @@ export const sendMessageController = async (c: Context) => {
 
         const { result, intent } = routeResult;
 
-        // 5. Stream Response
-        console.log(`Returning text stream response for intent: ${intent}`);
 
-        // Return proper AI SDK streaming response
-        // Return proper AI SDK streaming response
+
+
+
         const response = result.toUIMessageStreamResponse({
             headers: {
                 'Cache-Control': 'no-cache',

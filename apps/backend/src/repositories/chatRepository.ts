@@ -1,14 +1,11 @@
 import { prisma } from '../lib/db.js';
 
-/**
- * Repository layer for chat/conversation database operations
- * Handles all direct Prisma interactions for conversations and messages
- */
+
 export class ChatRepository {
-    // ========== Conversation Operations ==========
+
 
     async createConversation(userId: string) {
-        // Ensure the user exists first (upsert pattern for mock scenarios)
+
         await prisma.user.upsert({
             where: { id: userId },
             update: {},
@@ -51,7 +48,7 @@ export class ChatRepository {
     }
 
     async deleteConversation(conversationId: string) {
-        // Delete messages first (cascade safety)
+
         await prisma.message.deleteMany({
             where: { conversationId },
         });
@@ -61,7 +58,7 @@ export class ChatRepository {
         });
     }
 
-    // ========== Message Operations ==========
+
 
     async createMessage(conversationId: string, role: string, content: string, intent?: string) {
         return prisma.message.create({

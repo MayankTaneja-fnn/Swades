@@ -22,7 +22,7 @@ export default function Chat() {
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Fetch conversation list
+
     const fetchConversations = async () => {
         try {
             const response = await fetch("/api/chat/conversations");
@@ -35,7 +35,7 @@ export default function Chat() {
         }
     };
 
-    // Load a specific conversation
+
     const loadConversation = async (id: string) => {
         try {
             const response = await fetch(`/api/chat/conversations/${id}`);
@@ -55,14 +55,11 @@ export default function Chat() {
                 setConversationId(id);
                 localStorage.setItem("active_conversation_id", id);
                 setMessages(formatted);
-            } else if (response.status === 404) {
-                console.warn("Conversation not found, creating new one...");
-                await handleCreateNewChat();
+
             }
         } catch (error) {
             console.error("Failed to load conversation:", error);
         } finally {
-            console.log("Setting isInitialized to true (loadConversation)");
             setIsInitialized(true);
         }
     };
@@ -84,7 +81,6 @@ export default function Chat() {
         } catch (error) {
             console.error("Failed to create conversation:", error);
         } finally {
-            console.log("Setting isInitialized to true (handleCreateNewChat)");
             setIsInitialized(true);
         }
     };
@@ -113,7 +109,7 @@ export default function Chat() {
         }
     };
 
-    // Initial load
+
     useEffect(() => {
         const initializeChat = async () => {
             await fetchConversations();
@@ -130,7 +126,7 @@ export default function Chat() {
         initializeChat();
     }, []);
 
-    // Auto scroll
+
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
@@ -140,11 +136,11 @@ export default function Chat() {
 
         if (!input.trim()) return;
 
-        // Ensure we have a conversation ID before sending
+
         let currentConversationId = conversationId;
         if (!currentConversationId) {
             try {
-                // If no conversation, create one first
+
                 const response = await fetch("/api/chat/conversations", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -157,7 +153,7 @@ export default function Chat() {
                     localStorage.setItem("active_conversation_id", data.id);
                 } else {
                     console.error("Failed to create new conversation automatically");
-                    return; // Stop if we can't create a conversation
+
                 }
             } catch (error) {
                 console.error("Error creating conversation:", error);
@@ -175,8 +171,7 @@ export default function Chat() {
             );
         } catch (error) {
             console.error("Failed to send message:", error);
-            // Restore input on error, but only if it's not a 404 which we now handle better 
-            // actually let's just restore it for safety
+
             setInput(currentInput);
         }
     };
@@ -203,7 +198,7 @@ export default function Chat() {
 
     return (
         <div className="flex h-screen bg-white">
-            {/* Sidebar */}
+
             <aside className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
                 <div className="p-4 border-b border-gray-200">
                     <button
@@ -241,7 +236,7 @@ export default function Chat() {
                 </div>
             </aside>
 
-            {/* Main Chat Area */}
+
             <main className="flex-1 flex flex-col min-w-0">
                 <header className="bg-white shadow-sm p-4 flex justify-between items-center border-b border-gray-200">
                     <div className="flex items-center gap-4">

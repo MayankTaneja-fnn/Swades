@@ -11,14 +11,14 @@ const app = new Hono()
 export { app }
 
 
-// Global middleware
+
 app.use('/*', cors())
 
-// Increased rate limit for development/demo purposes
-const REQUEST_LIMIT = process.env.NODE_ENV === 'development' ? 500 : 200;
-app.use('/api/*', rateLimit({ windowMs: 15 * 60 * 1000, max: REQUEST_LIMIT })) // 500 requests per 15 minutes in dev
 
-app.use('*', errorMiddleware) // Global error handling
+const REQUEST_LIMIT = process.env.NODE_ENV === 'development' ? 500 : 200;
+app.use('/api/*', rateLimit({ windowMs: 15 * 60 * 1000, max: REQUEST_LIMIT }))
+
+app.use('*', errorMiddleware)
 
 
 app.get('/', (c) => {
@@ -33,7 +33,7 @@ app.route('/api/chat', chatRouter);
 app.route('/api/agents', agentsRouter);
 
 const port = 3000
-console.log(`Server is running on port ${port}`)
+
 
 serve({
   fetch: app.fetch,

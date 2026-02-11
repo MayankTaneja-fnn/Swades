@@ -4,7 +4,7 @@ const rateLimitMap = new Map<string, number[]>();
 
 export const rateLimit = (options: { windowMs: number; max: number }) => {
     return async (c: Context, next: Next) => {
-        // More robust IP detection for local and proxied environments
+
         const ip = c.req.header('x-forwarded-for')?.split(',')[0].trim() ||
             c.req.header('x-real-ip') ||
             '127.0.0.1';
@@ -16,7 +16,7 @@ export const rateLimit = (options: { windowMs: number; max: number }) => {
         const requestsInWindow = requestTimestamps.filter((timestamp) => timestamp > windowStart);
 
         if (requestsInWindow.length >= options.max) {
-            console.warn(`[RateLimit] Limit exceeded for IP: ${ip} (${requestsInWindow.length} requests in window)`);
+
             return c.json({
                 error: 'Too many requests, please try again later.',
                 message: 'Rate limit exceeded. Please wait a moment before trying again.'

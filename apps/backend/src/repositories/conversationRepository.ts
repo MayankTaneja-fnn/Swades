@@ -1,12 +1,12 @@
 import { prisma } from '../lib/db.js';
 
-// Repository layer for database operations
+
 export class ConversationRepository {
     async getConversationHistory(conversationId: string) {
         const messages = await prisma.message.findMany({
             where: { conversationId },
             orderBy: { createdAt: 'asc' },
-            select: {   
+            select: {
                 id: true,
                 role: true,
                 content: true,
@@ -74,7 +74,7 @@ export class ConversationRepository {
         return null;
     }
 
-    // ✅ BONUS FEATURE: Context Compaction
+
     async compactConversation(conversationId: string) {
         const messages = await prisma.message.findMany({
             where: { conversationId },
@@ -87,11 +87,11 @@ export class ConversationRepository {
             return { compacted: false, messageCount };
         }
 
-        // Keep last 5 messages
+
         const messagesToKeep = messages.slice(-5);
         const messagesToSummarize = messages.slice(0, -5);
 
-        // Create summary of older messages
+
         const summary = {
             totalMessages: messagesToSummarize.length,
             dateRange: {
@@ -105,10 +105,10 @@ export class ConversationRepository {
                 .slice(0, 5),
         };
 
-        // Update conversation summary
+
         await this.updateConversationSummary(conversationId, summary);
 
-        // Delete older messages (keep last 5)
+
         const messageIdsToDelete = messagesToSummarize.map(m => m.id);
         await prisma.message.deleteMany({
             where: {
@@ -116,7 +116,7 @@ export class ConversationRepository {
             },
         });
 
-        console.log(`✅ Compacted conversation ${conversationId}: ${messagesToSummarize.length} messages summarized, ${messagesToKeep.length} kept`);
+
 
         return {
             compacted: true,

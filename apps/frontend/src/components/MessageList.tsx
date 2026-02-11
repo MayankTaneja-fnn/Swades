@@ -18,7 +18,7 @@ const getAgentLabel = (intent?: string) => {
   }
 };
 
-// Extract text properly from AI SDK v6 message.parts
+
 const getMessageText = (m: UIMessage) => {
   if ((m as any).content && typeof (m as any).content === "string") {
     return (m as any).content;
@@ -101,7 +101,7 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
         );
       })}
 
-      {/* Thinking Indicator */}
+
       {isLoading && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
         <div className="flex w-full justify-start">
           <div className="px-5 py-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] bg-white border border-gray-100 rounded-[24px] rounded-tl-none">

@@ -17,7 +17,7 @@ export const errorMiddleware = async (c: Context, next: Next) => {
         let errorResponse: ErrorResponse;
         let statusCode = 500;
 
-        // Handle Prisma errors
+
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
             statusCode = 400;
 
@@ -51,7 +51,7 @@ export const errorMiddleware = async (c: Context, next: Next) => {
                     };
             }
         }
-        // Handle Zod validation errors
+
         else if (err instanceof ZodError) {
             statusCode = 400;
             errorResponse = {
@@ -63,7 +63,7 @@ export const errorMiddleware = async (c: Context, next: Next) => {
                 }))
             };
         }
-        // Handle Prisma validation errors
+
         else if (err instanceof Prisma.PrismaClientValidationError) {
             statusCode = 400;
             errorResponse = {
@@ -72,7 +72,7 @@ export const errorMiddleware = async (c: Context, next: Next) => {
                 details: { message: err.message }
             };
         }
-        // Handle AI SDK errors
+
         else if (err.name === 'AI_APICallError' || err.message?.includes('AI SDK')) {
             statusCode = 503;
             errorResponse = {
@@ -81,7 +81,7 @@ export const errorMiddleware = async (c: Context, next: Next) => {
                 details: { message: err.message }
             };
         }
-        // Handle general errors
+
         else {
             errorResponse = {
                 error: err.message || 'An unexpected error occurred',

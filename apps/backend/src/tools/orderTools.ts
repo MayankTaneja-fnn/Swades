@@ -20,7 +20,7 @@ export const orderTools = {
                     };
                 }
 
-                console.log(`Tool EXECUTE: trackOrder for ${orderId}`);
+
 
                 const order = await prisma.order.findUnique({
                     where: { id: orderId },
@@ -67,9 +67,9 @@ export const orderTools = {
                     };
                 }
 
-                console.log(`Tool EXECUTE: cancelOrder for ${orderId}`);
 
-                // Check if order exists
+
+
                 const order = await prisma.order.findUnique({
                     where: { id: orderId },
                 });
@@ -92,7 +92,7 @@ export const orderTools = {
                     };
                 }
 
-                // Mock cancellation (in production, update order status)
+
                 const cancellationId = `CXL-${Date.now()}`;
 
                 return {
@@ -141,9 +141,9 @@ export const orderTools = {
                     };
                 }
 
-                console.log(`Tool EXECUTE: updateDeliveryAddress for ${orderId}`);
 
-                // Check if order exists
+
+
                 const order = await prisma.order.findUnique({
                     where: { id: orderId },
                 });
@@ -168,7 +168,7 @@ export const orderTools = {
                     };
                 }
 
-                // Mock address update (in production, update order record)
+
                 return {
                     success: true,
                     orderId,

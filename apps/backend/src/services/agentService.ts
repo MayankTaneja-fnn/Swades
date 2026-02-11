@@ -9,7 +9,7 @@ import { orderTools } from "../tools/orderTools.js";
 import { billingTools } from "../tools/billingTools.js";
 import { supportTools } from "../tools/supportTools.js";
 
-// Helper to extract plain text from message content
+
 function getMessageText(message: ChatMessage): string {
     if (!message) return "";
 
@@ -27,21 +27,21 @@ function getMessageText(message: ChatMessage): string {
 
 const FAST_MODEL = "llama-3.1-8b-instant";
 
-// ✅ IMPROVEMENT 1: Strict Routing Schema with Confidence
+
 const routingSchema = z.object({
     intent: z.enum(["ORDER", "BILLING", "SUPPORT"]),
     confidence: z.number().min(0).max(1),
     reason: z.string()
 });
 
-// ✅ IMPROVEMENT 2: Conversation Context Builder
+
 function buildConversationContext(messages: ChatMessage[]): ConversationContext {
-    // Get last 5 messages
+
     const lastMessages = messages
         .slice(-5)
         .map(m => `${m.role}: ${getMessageText(m)}`);
 
-    // ✅ Extract last mentioned orderId using utility function
+
     let lastOrderId: string | undefined;
 
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -53,7 +53,7 @@ function buildConversationContext(messages: ChatMessage[]): ConversationContext 
         }
     }
 
-    // Determine last issue type from conversation
+
     const conversationText = messages.map(m => getMessageText(m)).join(" ").toUpperCase();
     let lastIssueType: string | undefined;
 
@@ -66,13 +66,13 @@ function buildConversationContext(messages: ChatMessage[]): ConversationContext 
     return { lastMessages, lastOrderId, lastIssueType };
 }
 
-// ------------------ IMPROVED ROUTER WITH CONFIDENCE ------------------ //
+
 async function routeWithConfidence(
     userText: string,
     context: ConversationContext
 ): Promise<{ intent: string; confidence: number; reason: string }> {
     try {
-        // Build context-aware prompt
+
         const contextInfo = [
             context.lastOrderId ? `Last mentioned Order ID: ${context.lastOrderId}` : null,
             context.lastIssueType ? `Previous issue type: ${context.lastIssueType}` : null,
@@ -97,16 +97,16 @@ Return ONLY a JSON object with this exact format:
             prompt,
         });
 
-        // Parse the JSON response
+
         const parsed = JSON.parse(text.trim());
         const validated = routingSchema.parse(parsed);
 
-        console.log(`ROUTER: intent=${validated.intent}, confidence=${validated.confidence}, reason=${validated.reason}`);
+
 
         return validated;
     } catch (e) {
         console.error("Router model error:", e);
-        // Fallback to SUPPORT with low confidence
+
         return {
             intent: "SUPPORT",
             confidence: 0.3,
@@ -115,14 +115,14 @@ Return ONLY a JSON object with this exact format:
     }
 }
 
-// Helper to ensure messages are in CoreMessage format for AI SDK
+
 function normalizeMessages(messages: ChatMessage[]): any[] {
     return messages.map(m => {
-        // AI SDK CoreMessage expects 'role' and 'content'
-        // 'content' can be string or array of parts
+
+
         let normalizedContent = m.content;
 
-        // If content is missing, use empty string
+
         if (normalizedContent === undefined || normalizedContent === null) {
             normalizedContent = "";
         }
@@ -134,19 +134,16 @@ function normalizeMessages(messages: ChatMessage[]): any[] {
     });
 }
 
-// ------------------ MAIN ROUTER FUNCTION ------------------ //
+
 export async function routeAndProcess(
     messages: ChatMessage[],
     conversationId: string,
     onFinish?: (text: string, intent: string) => Promise<void>
 ): Promise<RoutingResult> {
     try {
-        console.log("\n=== ROUTE AND PROCESS START ===");
-        console.log("Messages received:", messages);
-        console.log("Messages length:", messages?.length || 0);
-        console.log("Messages is array:", Array.isArray(messages));
 
-        // Validate messages
+
+
         if (!messages || !Array.isArray(messages) || messages.length === 0) {
             console.error("ERROR: Invalid messages parameter!", messages);
             throw new Error("Messages parameter must be a non-empty array");
@@ -155,30 +152,30 @@ export async function routeAndProcess(
         const lastMessage = messages[messages.length - 1];
         const userText = getMessageText(lastMessage);
 
-        console.log(`ROUTING: "${userText.slice(0, 50)}..."`);
 
-        // ✅ BONUS FEATURE: Context Compaction (check if > 20 messages)
+
+
         try {
             const compactionResult = await conversationRepo.compactConversation(conversationId);
             if (compactionResult.compacted) {
-                console.log(`✅ Context compacted: ${compactionResult.summarizedCount} messages summarized`);
+
             }
         } catch (error) {
             console.error('Error during context compaction:', error);
         }
 
-        // ✅ Build conversation context
-        const context = buildConversationContext(messages);
-        console.log("CONTEXT:", context);
 
-        // ✅ Use LLM router with confidence
+        const context = buildConversationContext(messages);
+
+
+
         const routing = await routeWithConfidence(userText, context);
 
-        // ✅ BONUS FEATURE: Multi-Step Clarification for low confidence
-        if (routing.confidence < 0.6) {
-            console.log(`⚠️ Low confidence (${routing.confidence}), generating clarification question`);
 
-            // Generate clarification question
+        if (routing.confidence < 0.6) {
+
+
+
             const clarificationQuestions = [
                 "I want to help you with the right information. Are you asking about:\n• Order tracking or delivery status?\n• Billing, invoices, or refunds?\n• General account support?",
                 "To assist you better, could you clarify if this is related to:\n• An existing order?\n• A payment or billing issue?\n• Something else?",
@@ -187,15 +184,15 @@ export async function routeAndProcess(
 
             const clarificationQuestion = clarificationQuestions[Math.floor(Math.random() * clarificationQuestions.length)];
 
-            // Route to SUPPORT with clarification prompt
+
             routing.intent = "SUPPORT";
-            console.log(`Routing to SUPPORT with clarification: "${clarificationQuestion}"`);
+
         }
 
         const intentUpper = routing.intent;
-        console.log("FINAL ROUTER RESULT:", intentUpper, `(confidence: ${routing.confidence})`);
 
-        // ✅ Update conversation summary in database
+
+
         try {
             await chatRepo.updateConversation(conversationId, {
                 summary: JSON.stringify({
@@ -209,7 +206,7 @@ export async function routeAndProcess(
             console.error("Failed to update conversation summary:", error);
         }
 
-        // ✅ Select agent tools and system prompt
+
         let systemPrompt = "";
         let tools: any = {};
 
@@ -232,12 +229,11 @@ IMPORTANT: You have access to conversation history tools. The current conversati
             tools = supportTools;
         }
 
-        // ------------------ CONVERT MESSAGES ------------------ //
-        console.log("Normalizing messages for model...");
-        const modelMessages = normalizeMessages(messages);
-        console.log("Messages normalized successfully");
 
-        // ------------------ STREAM RESPONSE WITH STATUS INDICATORS ------------------ //
+        const modelMessages = normalizeMessages(messages);
+
+
+
         const result = streamText({
             model: groq(FAST_MODEL),
             system: `${systemPrompt}
@@ -250,34 +246,14 @@ DO NOT leave the response empty.`,
             stopWhen: stepCountIs(5),
             // maxSteps: 5,
 
-            // ✅ BONUS FEATURE: Streaming Status Indicators
+
             onStepFinish: async (step: any) => {
-                console.log("STEP FINISHED:", step);
 
-                if (step.toolCalls?.length) {
-                    // ✅ Emit "tool_running" status
-                    console.log("STATUS: tool_running");
-                    console.log(
-                        "TOOL CALLS DETECTED:",
-                        step.toolCalls.map((tc: any) => tc.toolName)
-                    );
-                }
-
-                if (step.toolResults?.length) {
-                    console.log("TOOL RESULTS RECEIVED:", step.toolResults.length);
-                    // ✅ Emit "generating_response" status after tools complete
-                    console.log("STATUS: generating_response");
-                }
-
-                if (!step.toolCalls?.length && !step.toolResults?.length) {
-                    // ✅ Emit "agent_thinking" status when no tools are involved
-                    console.log("STATUS: agent_thinking");
-                }
             },
 
             onFinish: async (event: any) => {
                 const finalContent = event.text || "";
-                console.log(`STREAM FINISHED. Final Text Length: ${finalContent.length}`);
+
 
                 if (onFinish) await onFinish(finalContent, intentUpper);
             },

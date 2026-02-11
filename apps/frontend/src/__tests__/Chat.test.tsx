@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Chat from '../components/Chat'
 import { useChat } from '@ai-sdk/react'
 
-// Mock useChat hook since it relies on backend
+
 vi.mock('@ai-sdk/react', () => ({
     useChat: vi.fn(),
 }))

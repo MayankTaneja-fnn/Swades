@@ -1,4 +1,4 @@
-// Agent capabilities configuration
+
 export interface AgentCapability {
     type: 'ORDER' | 'BILLING' | 'SUPPORT';
     tools: string[];

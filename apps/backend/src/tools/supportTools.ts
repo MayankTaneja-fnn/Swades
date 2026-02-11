@@ -31,7 +31,7 @@ export const supportTools = {
                     messageCount: history.length,
                     messages: history.map(m => ({
                         role: m.role,
-                        content: m.content.substring(0, 200), // Truncate for brevity
+                        content: m.content.substring(0, 200),
                         intent: m.intent,
                     })),
                 };

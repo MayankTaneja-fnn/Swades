@@ -12,7 +12,7 @@ export const billingTools = {
         }),
         execute: async ({ orderId, invoiceId }: { orderId?: string; invoiceId?: string }): Promise<InvoiceToolResult> => {
             try {
-                console.log(`Tool EXECUTE: getInvoice`, { orderId, invoiceId });
+
 
                 if (!orderId && !invoiceId) {
                     return {
@@ -74,7 +74,7 @@ export const billingTools = {
             orderId: string;
             reason: string;
         }): Promise<RefundToolResult> => {
-            console.log(`Tool EXECUTE: processRefund for ${orderId}`);
+
             return {
                 success: true,
                 orderId,
@@ -100,9 +100,9 @@ export const billingTools = {
                     };
                 }
 
-                console.log(`Tool EXECUTE: checkRefundStatus for ${orderId}`);
 
-                // Check if order exists
+
+
                 const order = await prisma.order.findUnique({
                     where: { id: orderId },
                 });
@@ -116,7 +116,7 @@ export const billingTools = {
                     };
                 }
 
-                // Mock refund status (in production, check refund table)
+
                 const mockStatuses = ["PENDING", "PROCESSING", "APPROVED", "COMPLETED"];
                 const randomStatus = mockStatuses[Math.floor(Math.random() * mockStatuses.length)];
 
@@ -164,9 +164,9 @@ export const billingTools = {
                     };
                 }
 
-                console.log(`Tool EXECUTE: getSubscription for ${userId}`);
 
-                // Check if user exists
+
+
                 const user = await prisma.user.findUnique({
                     where: { id: userId },
                 });
@@ -180,7 +180,7 @@ export const billingTools = {
                     };
                 }
 
-                // Mock subscription data (in production, query subscription table)
+
                 const mockPlans = ["BASIC", "PREMIUM", "ENTERPRISE"];
                 const mockPlan = mockPlans[Math.floor(Math.random() * mockPlans.length)];
                 const mockAmounts = { BASIC: 9.99, PREMIUM: 19.99, ENTERPRISE: 49.99 };
