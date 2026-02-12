@@ -1,9 +1,9 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { prisma } from "../lib/db.js";
+import { getPrisma } from "../lib/db.js";
 import { OrderToolResult, CancelOrderResult, UpdateAddressResult } from "../types/agentTypes.js";
 
-export const orderTools = {
+export const createOrderTools = (databaseUrl: string) => ({
     trackOrder: tool({
         description:
             "Get tracking status of an order using its exact UUID (e.g., 123e4567-e89b-12d3-a456-426614174000)",
@@ -21,6 +21,7 @@ export const orderTools = {
                     };
                 }
 
+                const prisma = getPrisma(databaseUrl);
                 const order = await prisma.order.findUnique({
                     where: { id: orderId },
                 });
@@ -70,6 +71,7 @@ export const orderTools = {
 
 
 
+                const prisma = getPrisma(databaseUrl);
                 const order = await prisma.order.findUnique({
                     where: { id: orderId },
                 });
@@ -144,6 +146,7 @@ export const orderTools = {
 
 
 
+                const prisma = getPrisma(databaseUrl);
                 const order = await prisma.order.findUnique({
                     where: { id: orderId },
                 });
@@ -187,5 +190,5 @@ export const orderTools = {
             }
         },
     }),
-};
+});
 

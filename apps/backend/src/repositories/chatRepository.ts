@@ -1,10 +1,11 @@
-import { prisma } from '../lib/db.js';
+import { getPrisma } from '../lib/db.js';
 
 
 export class ChatRepository {
 
 
-    async createConversation(userId: string) {
+    async createConversation(databaseUrl: string, userId: string) {
+        const prisma = getPrisma(databaseUrl);
 
         await prisma.user.upsert({
             where: { id: userId },
@@ -21,13 +22,15 @@ export class ChatRepository {
         });
     }
 
-    async getConversationById(id: string) {
+    async getConversationById(databaseUrl: string, id: string) {
+        const prisma = getPrisma(databaseUrl);
         return prisma.conversation.findUnique({
             where: { id },
         });
     }
 
-    async getUserConversations(userId: string) {
+    async getUserConversations(databaseUrl: string, userId: string) {
+        const prisma = getPrisma(databaseUrl);
         return prisma.conversation.findMany({
             where: { userId },
             orderBy: { updatedAt: 'desc' },
@@ -40,14 +43,16 @@ export class ChatRepository {
         });
     }
 
-    async updateConversation(id: string, data: any) {
+    async updateConversation(databaseUrl: string, id: string, data: any) {
+        const prisma = getPrisma(databaseUrl);
         return prisma.conversation.update({
             where: { id },
             data,
         });
     }
 
-    async deleteConversation(conversationId: string) {
+    async deleteConversation(databaseUrl: string, conversationId: string) {
+        const prisma = getPrisma(databaseUrl);
 
         await prisma.message.deleteMany({
             where: { conversationId },
@@ -60,7 +65,8 @@ export class ChatRepository {
 
 
 
-    async createMessage(conversationId: string, role: string, content: string, intent?: string) {
+    async createMessage(databaseUrl: string, conversationId: string, role: string, content: string, intent?: string) {
+        const prisma = getPrisma(databaseUrl);
         return prisma.message.create({
             data: {
                 conversationId,
@@ -71,14 +77,16 @@ export class ChatRepository {
         });
     }
 
-    async getMessagesByConversationId(conversationId: string) {
+    async getMessagesByConversationId(databaseUrl: string, conversationId: string) {
+        const prisma = getPrisma(databaseUrl);
         return prisma.message.findMany({
             where: { conversationId },
             orderBy: { createdAt: 'asc' },
         });
     }
 
-    async getRecentMessages(conversationId: string, limit: number) {
+    async getRecentMessages(databaseUrl: string, conversationId: string, limit: number) {
+        const prisma = getPrisma(databaseUrl);
         return prisma.message.findMany({
             where: { conversationId },
             orderBy: { createdAt: 'desc' },
@@ -86,13 +94,15 @@ export class ChatRepository {
         });
     }
 
-    async deleteMessagesByConversationId(conversationId: string) {
+    async deleteMessagesByConversationId(databaseUrl: string, conversationId: string) {
+        const prisma = getPrisma(databaseUrl);
         return prisma.message.deleteMany({
             where: { conversationId },
         });
     }
 
-    async getMessageCount(conversationId: string): Promise<number> {
+    async getMessageCount(databaseUrl: string, conversationId: string): Promise<number> {
+        const prisma = getPrisma(databaseUrl);
         return prisma.message.count({
             where: { conversationId },
         });

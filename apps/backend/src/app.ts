@@ -5,7 +5,12 @@ import agentsRouter from "./routes/agents.js";
 import { rateLimit } from "./middleware/rateLimit.js";
 import { errorMiddleware } from "./middleware/errorMiddleware.js";
 
-const app = new Hono();
+export type Env = {
+  DATABASE_URL: string;
+  GROQ_API_KEY: string;
+};
+
+export const app = new Hono<{ Bindings: Env }>();
 
 app.use(
   "*",
@@ -18,12 +23,11 @@ app.use(
 
 app.options("*", (c) => c.body(null, 204));
 
-const REQUEST_LIMIT = process.env.NODE_ENV === "development" ? 500 : 200;
+// no process.env on Cloudflare
+const REQUEST_LIMIT = 200;
 
 app.use("/api/*", async (c, next) => {
-  if (c.req.method === "OPTIONS") {
-    return c.body(null, 204);
-  }
+  if (c.req.method === "OPTIONS") return c.body(null, 204);
   await next();
 });
 
@@ -31,10 +35,17 @@ app.use("/api/*", rateLimit({ windowMs: 15 * 60 * 1000, max: REQUEST_LIMIT }));
 
 app.use("*", errorMiddleware);
 
-app.get("/health", (c) => c.json({ status: "ok" }));
+app.get("/api/health", (c) => c.json({ status: "ok" }));
+
+// Debug route to confirm env is loaded
+app.get("/api/debug/env", (c) => {
+  return c.json({
+    hasDatabaseUrl: !!c.env.DATABASE_URL,
+    hasGroqKey: !!c.env.GROQ_API_KEY,
+  });
+});
 
 app.route("/api/chat", chatRouter);
 app.route("/api/agents", agentsRouter);
 
-export { app };
 export type AppType = typeof app;

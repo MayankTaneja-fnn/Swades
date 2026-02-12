@@ -1,34 +1,38 @@
 import { Context } from 'hono';
 import { routeAndProcess } from '../services/agentService.js';
 import { saveMessage, getConversationHistory, createConversation, getUserConversations, deleteConversation, getConversation } from '../services/chatService.js';
-import { prisma } from '../lib/db.js';
+import { getPrisma } from '../lib/db.js';
 
 export const getConversationsController = async (c: Context) => {
     // TODO: Get userId from auth context
     const userId = 'user-123-mock'; // Mock user
-    const conversations = await getUserConversations(userId);
+    const databaseUrl = c.env.DATABASE_URL as string;
+    const conversations = await getUserConversations(databaseUrl, userId);
     return c.json(conversations);
 };
 
 export const getConversationController = async (c: Context) => {
     const id = c.req.param('id');
-    const conversation = await getConversation(id);
+    const databaseUrl = c.env.DATABASE_URL as string;
+    const conversation = await getConversation(databaseUrl, id);
     if (!conversation) {
         return c.json({ error: 'Conversation not found' }, 404);
     }
-    const messages = await getConversationHistory(id);
+    const messages = await getConversationHistory(databaseUrl, id);
     return c.json(messages);
 };
 
 export const createConversationController = async (c: Context) => {
     const userId = 'user-123-mock';
-    const conversation = await createConversation(userId);
+    const databaseUrl = c.env.DATABASE_URL as string;
+    const conversation = await createConversation(databaseUrl, userId);
     return c.json(conversation);
 };
 
 export const sendMessageController = async (c: Context) => {
     try {
         const body = await c.req.json();
+        const databaseUrl = c.env.DATABASE_URL as string;
 
 
         const { conversationId, messages } = body;
@@ -76,17 +80,17 @@ export const sendMessageController = async (c: Context) => {
         }
 
 
-        const conversation = await getConversation(conversationId);
+        const conversation = await getConversation(databaseUrl, conversationId);
         if (!conversation) {
             console.error('Conversation not found:', conversationId);
             return c.json({ error: 'Conversation not found. Please create a new chat.' }, 404);
         }
 
 
-        await saveMessage(conversationId, 'user', messageContent);
+        await saveMessage(databaseUrl, conversationId, 'user', messageContent);
 
 
-        const history = await getConversationHistory(conversationId);
+        const history = await getConversationHistory(databaseUrl, conversationId);
 
 
         if (!history || !Array.isArray(history)) {
@@ -103,9 +107,9 @@ export const sendMessageController = async (c: Context) => {
         }));
 
 
-        const routeResult = await routeAndProcess(coreMessages, conversationId, async (text: string, intent: string) => {
+        const routeResult = await routeAndProcess(databaseUrl, coreMessages, conversationId, async (text: string, intent: string) => {
 
-            await saveMessage(conversationId, 'assistant', text, intent);
+            await saveMessage(databaseUrl, conversationId, 'assistant', text, intent);
         });
 
 
@@ -139,8 +143,9 @@ export const sendMessageController = async (c: Context) => {
 
 export const deleteConversationController = async (c: Context) => {
     const id = c.req.param('id');
+    const databaseUrl = c.env.DATABASE_URL as string;
     try {
-        await deleteConversation(id);
+        await deleteConversation(databaseUrl, id);
         return c.json({ success: true });
     } catch (error) {
         console.error(error);

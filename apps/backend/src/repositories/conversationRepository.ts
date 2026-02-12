@@ -1,8 +1,9 @@
-import { prisma } from '../lib/db.js';
+import { getPrisma } from '../lib/db.js';
 
 
 export class ConversationRepository {
-    async getConversationHistory(conversationId: string) {
+    async getConversationHistory(databaseUrl: string, conversationId: string) {
+        const prisma = getPrisma(databaseUrl);
         const messages = await prisma.message.findMany({
             where: { conversationId },
             orderBy: { createdAt: 'asc' },
@@ -17,7 +18,8 @@ export class ConversationRepository {
         return messages;
     }
 
-    async getLastOrderId(conversationId: string): Promise<string | null> {
+    async getLastOrderId(databaseUrl: string, conversationId: string): Promise<string | null> {
+        const prisma = getPrisma(databaseUrl);
         const messages = await prisma.message.findMany({
             where: { conversationId },
             orderBy: { createdAt: 'desc' },
@@ -36,13 +38,14 @@ export class ConversationRepository {
         return null;
     }
 
-    async getLastInvoice(conversationId: string) {
-        const lastOrderId = await this.getLastOrderId(conversationId);
+    async getLastInvoice(databaseUrl: string, conversationId: string) {
+        const lastOrderId = await this.getLastOrderId(databaseUrl, conversationId);
 
         if (!lastOrderId) {
             return null;
         }
 
+        const prisma = getPrisma(databaseUrl);
         const invoice = await prisma.invoice.findFirst({
             where: { orderId: lastOrderId },
         });
@@ -50,14 +53,16 @@ export class ConversationRepository {
         return invoice;
     }
 
-    async updateConversationSummary(conversationId: string, summary: any) {
+    async updateConversationSummary(databaseUrl: string, conversationId: string, summary: any) {
+        const prisma = getPrisma(databaseUrl);
         await prisma.conversation.update({
             where: { id: conversationId },
             data: { summary: JSON.stringify(summary) } as any,
         });
     }
 
-    async getConversationSummary(conversationId: string) {
+    async getConversationSummary(databaseUrl: string, conversationId: string) {
+        const prisma = getPrisma(databaseUrl);
         const conversation = await prisma.conversation.findUnique({
             where: { id: conversationId },
             select: { summary: true } as any,
@@ -75,7 +80,8 @@ export class ConversationRepository {
     }
 
 
-    async compactConversation(conversationId: string) {
+    async compactConversation(databaseUrl: string, conversationId: string) {
+        const prisma = getPrisma(databaseUrl);
         const messages = await prisma.message.findMany({
             where: { conversationId },
             orderBy: { createdAt: 'asc' },
@@ -106,7 +112,7 @@ export class ConversationRepository {
         };
 
 
-        await this.updateConversationSummary(conversationId, summary);
+        await this.updateConversationSummary(databaseUrl, conversationId, summary);
 
 
         const messageIdsToDelete = messagesToSummarize.map(m => m.id);

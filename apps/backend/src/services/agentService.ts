@@ -5,9 +5,9 @@ import { conversationRepo } from "../repositories/conversationRepository.js";
 import { chatRepo } from "../repositories/chatRepository.js";
 import { extractUUID } from "../utils/uuidExtractor.js";
 import { ChatMessage, ConversationContext, RoutingResult } from "../types/agentTypes.js";
-import { orderTools } from "../tools/orderTools.js";
-import { billingTools } from "../tools/billingTools.js";
-import { supportTools } from "../tools/supportTools.js";
+import { createOrderTools } from "../tools/orderTools.js";
+import { createBillingTools } from "../tools/billingTools.js";
+import { createSupportTools } from "../tools/supportTools.js";
 
 
 function getMessageText(message: ChatMessage): string {
@@ -136,6 +136,7 @@ function normalizeMessages(messages: ChatMessage[]): any[] {
 
 
 export async function routeAndProcess(
+    databaseUrl: string,
     messages: ChatMessage[],
     conversationId: string,
     onFinish?: (text: string, intent: string) => Promise<void>
@@ -156,7 +157,7 @@ export async function routeAndProcess(
 
 
         try {
-            const compactionResult = await conversationRepo.compactConversation(conversationId);
+            const compactionResult = await conversationRepo.compactConversation(databaseUrl, conversationId);
             if (compactionResult.compacted) {
 
             }
@@ -194,7 +195,7 @@ export async function routeAndProcess(
 
 
         try {
-            await chatRepo.updateConversation(conversationId, {
+            await chatRepo.updateConversation(databaseUrl, conversationId, {
                 summary: JSON.stringify({
                     lastOrderId: context.lastOrderId,
                     lastIssueType: context.lastIssueType,
@@ -213,11 +214,11 @@ export async function routeAndProcess(
         if (intentUpper === "ORDER") {
             systemPrompt = `You are an Order Tracking Agent. Help users track orders, check delivery status, and provide shipping information.
 Tools return JSON objects - use the structured data to provide helpful responses.`;
-            tools = orderTools;
+            tools = createOrderTools(databaseUrl);
         } else if (intentUpper === "BILLING") {
             systemPrompt = `You are a Billing Support Agent. Assist with invoices, refunds, payment issues, and subscription management.
 Tools return JSON objects - use the structured data to provide helpful responses.`;
-            tools = billingTools;
+            tools = createBillingTools(databaseUrl);
         } else {
             systemPrompt = `You are a General Support Agent. Provide helpful assistance for general inquiries and route complex issues appropriately.
 Tools return JSON objects - use the structured data to provide helpful responses.
@@ -226,7 +227,7 @@ IMPORTANT: You have access to conversation history tools. The current conversati
 - Use getConversationHistory to review past messages
 - Use getLastOrderId to find previously mentioned order IDs
 - Use getLastInvoice to retrieve invoice information from conversation context`;
-            tools = supportTools;
+            tools = createSupportTools(databaseUrl);
         }
 
 

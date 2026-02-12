@@ -6,31 +6,32 @@ import { userRepo } from '../repositories/userRepository.js';
 
 
 
-export const createConversation = async (userId: string) => {
+export const createConversation = async (databaseUrl: string, userId: string) => {
 
     if (userId === 'user-123-mock') {
-        await userRepo.findOrCreateUser('mock@example.com', 'Mock User');
+        await userRepo.findOrCreateUser(databaseUrl, 'mock@example.com', 'Mock User');
     }
 
-    return chatRepo.createConversation(userId);
+    return chatRepo.createConversation(databaseUrl, userId);
 };
 
-export const getConversation = async (id: string) => {
-    return chatRepo.getConversationById(id);
+export const getConversation = async (databaseUrl: string, id: string) => {
+    return chatRepo.getConversationById(databaseUrl, id);
 };
 
-export const getUserConversations = async (userId: string) => {
-    return chatRepo.getUserConversations(userId);
+export const getUserConversations = async (databaseUrl: string, userId: string) => {
+    return chatRepo.getUserConversations(databaseUrl, userId);
 };
 
-export const deleteConversation = async (conversationId: string) => {
+export const deleteConversation = async (databaseUrl: string, conversationId: string) => {
 
-    return chatRepo.deleteConversation(conversationId);
+    return chatRepo.deleteConversation(databaseUrl, conversationId);
 };
 
 
 
 export const saveMessage = async (
+    databaseUrl: string,
     conversationId: string,
     role: string,
     content: string,
@@ -43,16 +44,16 @@ export const saveMessage = async (
         }
 
 
-        const conversation = await chatRepo.getConversationById(conversationId);
+        const conversation = await chatRepo.getConversationById(databaseUrl, conversationId);
         if (!conversation) {
             throw new Error('Conversation not found');
         }
 
 
-        const message = await chatRepo.createMessage(conversationId, role, content, intent);
+        const message = await chatRepo.createMessage(databaseUrl, conversationId, role, content, intent);
 
 
-        await chatRepo.updateConversation(conversationId, {
+        await chatRepo.updateConversation(databaseUrl, conversationId, {
             updatedAt: new Date(),
         });
 
@@ -63,29 +64,29 @@ export const saveMessage = async (
     }
 };
 
-export const getConversationHistory = async (conversationId: string) => {
+export const getConversationHistory = async (databaseUrl: string, conversationId: string) => {
 
-    return chatRepo.getMessagesByConversationId(conversationId);
+    return chatRepo.getMessagesByConversationId(databaseUrl, conversationId);
 };
 
-export const getRecentMessages = async (conversationId: string, limit: number = 10) => {
+export const getRecentMessages = async (databaseUrl: string, conversationId: string, limit: number = 10) => {
 
     const validLimit = Math.min(Math.max(limit, 1), 100);
-    return chatRepo.getRecentMessages(conversationId, validLimit);
+    return chatRepo.getRecentMessages(databaseUrl, conversationId, validLimit);
 };
 
 
 
-export const shouldCompactConversation = async (conversationId: string): Promise<boolean> => {
-    const messageCount = await chatRepo.getMessageCount(conversationId);
+export const shouldCompactConversation = async (databaseUrl: string, conversationId: string): Promise<boolean> => {
+    const messageCount = await chatRepo.getMessageCount(databaseUrl, conversationId);
     return messageCount > 20;
 };
 
-export const compactConversationIfNeeded = async (conversationId: string) => {
-    const shouldCompact = await shouldCompactConversation(conversationId);
+export const compactConversationIfNeeded = async (databaseUrl: string, conversationId: string) => {
+    const shouldCompact = await shouldCompactConversation(databaseUrl, conversationId);
 
     if (shouldCompact) {
-        return conversationRepo.compactConversation(conversationId);
+        return conversationRepo.compactConversation(databaseUrl, conversationId);
     }
 
     return { compacted: false };

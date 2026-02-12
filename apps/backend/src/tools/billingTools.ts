@@ -1,9 +1,9 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { prisma } from "../lib/db.js";
+import { getPrisma } from "../lib/db.js";
 import { InvoiceToolResult, RefundToolResult, RefundStatusResult, SubscriptionResult } from "../types/agentTypes.js";
 
-export const billingTools = {
+export const createBillingTools = (databaseUrl: string) => ({
     getInvoice: tool({
         description: "Get invoice details using the associated Order UUID or the Invoice UUID directly",
         inputSchema: z.object({
@@ -23,6 +23,7 @@ export const billingTools = {
                 }
 
                 let invoice;
+                const prisma = getPrisma(databaseUrl);
 
                 if (invoiceId) {
                     invoice = await prisma.invoice.findUnique({
@@ -103,6 +104,7 @@ export const billingTools = {
 
 
 
+                const prisma = getPrisma(databaseUrl);
                 const order = await prisma.order.findUnique({
                     where: { id: orderId },
                 });
@@ -167,6 +169,7 @@ export const billingTools = {
 
 
 
+                const prisma = getPrisma(databaseUrl);
                 const user = await prisma.user.findUnique({
                     where: { id: userId },
                 });
@@ -206,5 +209,5 @@ export const billingTools = {
             }
         },
     }),
-};
+});
 

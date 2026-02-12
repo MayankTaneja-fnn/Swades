@@ -3,7 +3,7 @@ import { z } from "zod";
 import { conversationRepo } from "../repositories/conversationRepository.js";
 import { KnowledgeBaseResult, ConversationHistoryResult, OrderIdResult, InvoiceResult } from "../types/agentTypes.js";
 
-export const supportTools = {
+export const createSupportTools = (databaseUrl: string) => ({
     searchKnowledgeBase: tool({
         description: "Search help docs",
         inputSchema: z.object({
@@ -25,7 +25,7 @@ export const supportTools = {
         }),
         execute: async ({ conversationId }: { conversationId: string }): Promise<ConversationHistoryResult> => {
             try {
-                const history = await conversationRepo.getConversationHistory(conversationId);
+                const history = await conversationRepo.getConversationHistory(databaseUrl, conversationId);
                 return {
                     found: true,
                     messageCount: history.length,
@@ -51,7 +51,7 @@ export const supportTools = {
         }),
         execute: async ({ conversationId }: { conversationId: string }): Promise<OrderIdResult> => {
             try {
-                const orderId = await conversationRepo.getLastOrderId(conversationId);
+                const orderId = await conversationRepo.getLastOrderId(databaseUrl, conversationId);
                 return {
                     found: !!orderId,
                     orderId: orderId || undefined,
@@ -76,7 +76,7 @@ export const supportTools = {
         }),
         execute: async ({ conversationId }: { conversationId: string }): Promise<InvoiceResult> => {
             try {
-                const invoice = await conversationRepo.getLastInvoice(conversationId);
+                const invoice = await conversationRepo.getLastInvoice(databaseUrl, conversationId);
                 if (invoice) {
                     return {
                         found: true,
@@ -99,4 +99,4 @@ export const supportTools = {
             }
         },
     }),
-};
+});
