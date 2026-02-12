@@ -13,7 +13,7 @@ export default function Chat() {
     const [isInitialized, setIsInitialized] = useState(false);
 
     const { messages, sendMessage, status, setMessages } = useChat({
-        api: `${API_BASE}/api/chat/messages`,
+        api: "https://swades-backend.tanejamayank21.workers.dev/api/chat/messages",
         onError: (error: any) => {
             console.error("Chat Error:", error);
         },
